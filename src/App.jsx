@@ -18,15 +18,15 @@
 //   Terminal 2 → npm run dev       (inside quotes-frontend)
 // ============================================================
 
-import { useState } from 'react'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+import axios from "axios";
 
 // The base URL for all fetch calls in this file.
 // Change this if your backend runs on a different port.
-const API_URL = 'http://localhost:8080'
+const API_URL = "http://localhost:8080";
 
 export default function App() {
-
   // ----------------------------------------------------------
   // STATE
   //
@@ -37,13 +37,12 @@ export default function App() {
   //
   // React re-renders the page every time any of these change.
   // ----------------------------------------------------------
-  const [quotes, setQuotes] = useState([])
+  const [quotes, setQuotes] = useState([]);
 
-  const [text, setText] = useState('')
-  const [author, setAuthor] = useState('')
+  const [text, setText] = useState("");
+  const [author, setAuthor] = useState("");
 
-  const [deleteId, setDeleteId] = useState('')
-
+  const [deleteId, setDeleteId] = useState("");
 
   // ----------------------------------------------------------
   // TASK 1 — Load all quotes
@@ -60,9 +59,11 @@ export default function App() {
   // was sending for you all week, now triggered by a button.
   // ----------------------------------------------------------
   async function loadQuotes() {
-
+    const response = await axios.get(`${API_URL}/api/quotes`);
+    // const response = await fetch('http://localhost:8080/api/quotes');
+    const allQuotes = await response.data;
+    setQuotes(allQuotes);
   }
-
 
   // ----------------------------------------------------------
   // TASK 2 — Add a new quote
@@ -84,10 +85,17 @@ export default function App() {
   // You have to call setQuotes to make the list reflect the change.
   // ----------------------------------------------------------
   async function handleCreate(e) {
-    e.preventDefault()
+    e.preventDefault();
+    const response = await axios.post(`${API_URL}/api/quotes`, {
+      text,
+      author,
+    });
 
+    const postQuote = await response.data;
+    setQuotes([...quotes, postQuote]);
+    setText("");
+    setAuthor("");
   }
-
 
   // ----------------------------------------------------------
   // TASK 3 — Delete a quote
@@ -102,10 +110,14 @@ export default function App() {
   //   3. Reset the input: setDeleteId('')
   // ----------------------------------------------------------
   async function handleDelete() {
+     const response = await axios.delete(`${API_URL}/api/quotes/${deleteId}`);
+     if (response) {
+      setQuotes(quotes.filter(quote => quote.id !==Number(deleteId) ));
+      setDeleteId('')    
+    };
 
   }
-
-
+   
   return (
     <div className="app">
       <h1>Quotes</h1>
@@ -135,7 +147,6 @@ export default function App() {
         )}
       </section>
 
-
       {/* --------------------------------------------------------
           SECTION 2 — Add a Quote
           Both inputs are controlled — their values live in state
@@ -161,7 +172,6 @@ export default function App() {
         </form>
       </section>
 
-
       {/* --------------------------------------------------------
           SECTION 3 — Delete a Quote
           The user types the id of the quote they want to remove,
@@ -180,7 +190,6 @@ export default function App() {
           <button onClick={handleDelete}>Delete</button>
         </div>
       </section>
-
     </div>
-  )
+  );
 }
